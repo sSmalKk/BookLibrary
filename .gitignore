@@ -1,0 +1,91 @@
+# Build Folders
+bin/
+obj/
+TestResults/
+out/
+
+# VS Code
+.vscode/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Auto-generated files
+*.csproj.user
+*.csproj.webinfo
+*.njsproj.user
+*.njsproj.intellisense*
+*.sln.ide
+
+# MSTest test Results
+TestResults
+
+# NUNIT
+*.VisualState.xml
+TestResult.xml
+
+# Build Results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.old
+*.backup
+
+# Package Files
+*.nupkg
+*.snupkg
+
+# Application Insights config file
+ApplicationInsights.config
+
+# Web Servers
+iisexpress/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Node Modules
+node_modules/
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Azure Pipelines
+.azure-pipelines/
