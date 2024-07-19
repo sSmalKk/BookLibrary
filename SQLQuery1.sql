@@ -20,31 +20,30 @@ CREATE TABLE dbo.Livro (
 
 -- Criar a tabela LivroDigital
 CREATE TABLE dbo.LivroDigital (
-    Id INT PRIMARY KEY,
-    Formato NVARCHAR(50),
-    FOREIGN KEY (Id) REFERENCES dbo.Livro(Id)
+    Id INT PRIMARY KEY,  -- Adicionando chave primária
+    Formato NVARCHAR(50) NOT NULL,
+    FOREIGN KEY (Id) REFERENCES dbo.Livro(Id) -- Relacionamento com Livro
 );
 
 -- Criar a tabela LivroImpresso
 CREATE TABLE dbo.LivroImpresso (
-    Id INT PRIMARY KEY,
-    NumeroPaginas INT,
-    Encadernacao NVARCHAR(50),
-    FOREIGN KEY (Id) REFERENCES dbo.Livro(Id)
+    Id INT PRIMARY KEY,  -- Adicionando chave primária
+    Peso INT NOT NULL,
+    FOREIGN KEY (Id) REFERENCES dbo.Livro(Id) -- Relacionamento com Livro
 );
 
 -- Criar a tabela TipoEncadernacao
 CREATE TABLE dbo.TipoEncadernacao (
     Codigo INT PRIMARY KEY,
-    Nome VARCHAR(50),
-    Descricao VARCHAR(255),
-    Formato VARCHAR(50)
+    Nome VARCHAR(50) NOT NULL,
+    Descricao VARCHAR(255) NOT NULL,
+    Formato VARCHAR(50) NOT NULL
 );
 
 -- Criar a tabela Tag
 CREATE TABLE dbo.Tag (
     Codigo INT PRIMARY KEY,
-    Descricao VARCHAR(255)
+    Descricao VARCHAR(255) NOT NULL
 );
 
 -- Criar a tabela Livro_Tag_Possui
