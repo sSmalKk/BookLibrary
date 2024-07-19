@@ -1,5 +1,4 @@
-﻿using BookLibraryAPI.Model;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,71 +18,37 @@ public class LivrosController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Livro>>> GetLivros([FromQuery] int? ano, [FromQuery] int? mes)
     {
-        var query = _context.Livros.AsQueryable();
-
-        if (ano.HasValue)
+        try
         {
-            query = query.Where(l => l.Lancamento.Year == ano.Value);
+            // Validar valores de mês
+            if (mes.HasValue && (mes < 1 || mes > 12))
+            {
+                return BadRequest("O mês deve estar entre 1 e 12.");
+            }
+
+            // Construir consulta
+            var query = _context.Livros.AsQueryable();
+
+            if (ano.HasValue)
+            {
+                query = query.Where(l => l.Lancamento.Year == ano.Value);
+            }
+
             if (mes.HasValue)
             {
                 query = query.Where(l => l.Lancamento.Month == mes.Value);
             }
+
+            // Obter resultados
+            var livros = await query.ToListAsync();
+            return Ok(livros);
         }
-
-        return await query.ToListAsync();
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Livro>> GetLivro(int id)
-    {
-        var livro = await _context.Livros.FindAsync(id);
-        if (livro == null)
+        catch (Exception ex)
         {
-            return NotFound();
+            // Logar e retornar erro genérico
+            // Logger.LogError(ex, "Erro ao buscar livros");
+            return StatusCode(500, "Ocorreu um erro ao processar a solicitação.");
         }
-
-        return livro;
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<Livro>> PostLivro(Livro livro)
-    {
-        _context.Livros.Add(livro);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetLivro), new { id = livro.Codigo }, livro);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutLivro(int id, Livro livro)
-    {
-        if (id != livro.Codigo)
-        {
-            return BadRequest();
-        }
-
-        _context.Entry(livro).State = EntityState.Modified;
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!LivroExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
-
-        return NoContent();
-    }
-
-    private bool LivroExists(int id)
-    {
-        return _context.Livros.Any(e => e.Codigo == id);
     }
 }
+

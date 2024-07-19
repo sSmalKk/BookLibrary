@@ -1,49 +1,66 @@
-CREATE TABLE Livro (
+USE LivrariaDb;
+GO
+
+-- Verificar e excluir tabelas existentes (se necessário)
+IF OBJECT_ID('dbo.LivroImpresso_TipoEncadernacao_Possui', 'U') IS NOT NULL DROP TABLE dbo.LivroImpresso_TipoEncadernacao_Possui;
+IF OBJECT_ID('dbo.Livro_Tag_Possui', 'U') IS NOT NULL DROP TABLE dbo.Livro_Tag_Possui;
+IF OBJECT_ID('dbo.Tag', 'U') IS NOT NULL DROP TABLE dbo.Tag;
+IF OBJECT_ID('dbo.TipoEncadernacao', 'U') IS NOT NULL DROP TABLE dbo.TipoEncadernacao;
+IF OBJECT_ID('dbo.LivroImpresso', 'U') IS NOT NULL DROP TABLE dbo.LivroImpresso;
+IF OBJECT_ID('dbo.LivroDigital', 'U') IS NOT NULL DROP TABLE dbo.LivroDigital;
+IF OBJECT_ID('dbo.Livro', 'U') IS NOT NULL DROP TABLE dbo.Livro;
+
+-- Criar a tabela Livro
+CREATE TABLE dbo.Livro (
     Id INT PRIMARY KEY IDENTITY,
     Titulo NVARCHAR(255) NOT NULL,
     Autor NVARCHAR(255) NOT NULL,
-    Lancamento DATE NOT NULL,
-    Tipo NVARCHAR(50) NOT NULL CHECK (Tipo IN ('Digital', 'Impresso'))
+    Lancamento DATE NOT NULL
 );
 
-CREATE TABLE LivroDigital (
+-- Criar a tabela LivroDigital
+CREATE TABLE dbo.LivroDigital (
     Id INT PRIMARY KEY,
     Formato NVARCHAR(50),
-    FOREIGN KEY (Id) REFERENCES Livro(Id)
+    FOREIGN KEY (Id) REFERENCES dbo.Livro(Id)
 );
 
-CREATE TABLE LivroImpresso (
+-- Criar a tabela LivroImpresso
+CREATE TABLE dbo.LivroImpresso (
     Id INT PRIMARY KEY,
     NumeroPaginas INT,
     Encadernacao NVARCHAR(50),
-    FOREIGN KEY (Id) REFERENCES Livro(Id)
+    FOREIGN KEY (Id) REFERENCES dbo.Livro(Id)
 );
 
-
--- Create the TipoEncadernacao table
-CREATE TABLE TipoEncadernacao (
+-- Criar a tabela TipoEncadernacao
+CREATE TABLE dbo.TipoEncadernacao (
     Codigo INT PRIMARY KEY,
     Nome VARCHAR(50),
     Descricao VARCHAR(255),
     Formato VARCHAR(50)
 );
 
--- Create the Tag table
-CREATE TABLE Tag (
+-- Criar a tabela Tag
+CREATE TABLE dbo.Tag (
     Codigo INT PRIMARY KEY,
     Descricao VARCHAR(255)
 );
 
--- Create the Possui table (relation between Livro and Tag)
-CREATE TABLE Livro_Tag_Possui (
-    Livro_Codigo INT REFERENCES Livro(Codigo),
-    Tag_Codigo INT REFERENCES Tag(Codigo),
-    PRIMARY KEY (Livro_Codigo, Tag_Codigo)
+-- Criar a tabela Livro_Tag_Possui
+CREATE TABLE dbo.Livro_Tag_Possui (
+    Livro_Id INT,
+    Tag_Codigo INT,
+    PRIMARY KEY (Livro_Id, Tag_Codigo),
+    FOREIGN KEY (Livro_Id) REFERENCES dbo.Livro(Id),
+    FOREIGN KEY (Tag_Codigo) REFERENCES dbo.Tag(Codigo)
 );
 
--- Create the Possui table (relation between LivroImpresso and TipoEncadernacao)
-CREATE TABLE LivroImpresso_TipoEncadernacao_Possui (
-    LivroImpresso_Codigo INT REFERENCES LivroImpresso(Codigo),
-    TipoEncadernacao_Codigo INT REFERENCES TipoEncadernacao(Codigo),
-    PRIMARY KEY (LivroImpresso_Codigo, TipoEncadernacao_Codigo)
+-- Criar a tabela LivroImpresso_TipoEncadernacao_Possui
+CREATE TABLE dbo.LivroImpresso_TipoEncadernacao_Possui (
+    LivroImpresso_Id INT,
+    TipoEncadernacao_Codigo INT,
+    PRIMARY KEY (LivroImpresso_Id, TipoEncadernacao_Codigo),
+    FOREIGN KEY (LivroImpresso_Id) REFERENCES dbo.LivroImpresso(Id),
+    FOREIGN KEY (TipoEncadernacao_Codigo) REFERENCES dbo.TipoEncadernacao(Codigo)
 );

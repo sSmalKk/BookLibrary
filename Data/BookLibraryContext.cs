@@ -20,7 +20,7 @@ public class BookLibraryContext : DbContext
     {
         // Configuração de Livro e suas subclasses
         modelBuilder.Entity<Livro>()
-            .HasKey(l => l.Codigo); // Definir chave primária para Livro
+            .HasKey(l => l.Codigo);
         modelBuilder.Entity<Livro>()
             .HasDiscriminator<string>("Tipo")
             .HasValue<Livro>("Livro")
@@ -62,6 +62,14 @@ public class BookLibraryContext : DbContext
             .WithMany(te => te.LivroImpressoTipoEncadernacaoPossuis)
             .HasForeignKey(lie => lie.TipoEncadernacaoId);
 
+        // Configuração de Tag
+        modelBuilder.Entity<Tag>()
+            .HasKey(t => t.Codigo);
+
+        // Configuração de TipoEncadernacao
+        modelBuilder.Entity<TipoEncadernacao>()
+            .HasKey(te => te.Codigo);
+
         base.OnModelCreating(modelBuilder);
     }
 }
@@ -69,11 +77,11 @@ public class BookLibraryContext : DbContext
 // Definição das entidades
 public class Livro
 {
-    public int Codigo { get; set; } // Chave primária
+    public int Codigo { get; set; }
     public string Titulo { get; set; }
     public string Autor { get; set; }
     public DateTime Lancamento { get; set; }
-    public ICollection<LivroTagPossui> LivroTagPossuis { get; set; }
+    public ICollection<LivroTagPossui> LivroTagPossuis { get; set; } = new HashSet<LivroTagPossui>();
 }
 
 public class LivroDigital : Livro
@@ -86,24 +94,24 @@ public class LivroImpresso : Livro
     public double Peso { get; set; }
     public int TipoEncadernacaoCodigo { get; set; }
     public TipoEncadernacao TipoEncadernacao { get; set; }
-    public ICollection<LivroImpressoTipoEncadernacaoPossui> LivroImpressoTipoEncadernacaoPossuis { get; set; }
+    public ICollection<LivroImpressoTipoEncadernacaoPossui> LivroImpressoTipoEncadernacaoPossuis { get; set; } = new HashSet<LivroImpressoTipoEncadernacaoPossui>();
 }
 
 public class TipoEncadernacao
 {
-    public int Codigo { get; set; } // Chave primária
+    public int Codigo { get; set; }
     public string Nome { get; set; }
     public string Descricao { get; set; }
     public string Formato { get; set; }
-    public ICollection<LivroImpresso> LivrosImpressos { get; set; }
-    public ICollection<LivroImpressoTipoEncadernacaoPossui> LivroImpressoTipoEncadernacaoPossuis { get; set; }
+    public ICollection<LivroImpresso> LivrosImpressos { get; set; } = new HashSet<LivroImpresso>();
+    public ICollection<LivroImpressoTipoEncadernacaoPossui> LivroImpressoTipoEncadernacaoPossuis { get; set; } = new HashSet<LivroImpressoTipoEncadernacaoPossui>();
 }
 
 public class Tag
 {
-    public int Codigo { get; set; } // Chave primária
+    public int Codigo { get; set; }
     public string Descricao { get; set; }
-    public ICollection<LivroTagPossui> LivroTagPossuis { get; set; }
+    public ICollection<LivroTagPossui> LivroTagPossuis { get; set; } = new HashSet<LivroTagPossui>();
 }
 
 public class LivroTagPossui
