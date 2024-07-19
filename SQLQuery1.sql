@@ -1,22 +1,24 @@
--- Create the Livro table
 CREATE TABLE Livro (
-    Codigo INT PRIMARY KEY,
-    Titulo VARCHAR(255),
-    Autor VARCHAR(255),
-    Lancamento DATE
+    Id INT PRIMARY KEY IDENTITY,
+    Titulo NVARCHAR(255) NOT NULL,
+    Autor NVARCHAR(255) NOT NULL,
+    Lancamento DATE NOT NULL,
+    Tipo NVARCHAR(50) NOT NULL CHECK (Tipo IN ('Digital', 'Impresso'))
 );
 
--- Create the LivroDigital table
 CREATE TABLE LivroDigital (
-    Codigo INT PRIMARY KEY REFERENCES Livro(Codigo),
-    Formato VARCHAR(50)
+    Id INT PRIMARY KEY,
+    Formato NVARCHAR(50),
+    FOREIGN KEY (Id) REFERENCES Livro(Id)
 );
 
--- Create the LivroImpresso table
 CREATE TABLE LivroImpresso (
-    Codigo INT PRIMARY KEY REFERENCES Livro(Codigo),
-    Peso DECIMAL(5,2)
+    Id INT PRIMARY KEY,
+    NumeroPaginas INT,
+    Encadernacao NVARCHAR(50),
+    FOREIGN KEY (Id) REFERENCES Livro(Id)
 );
+
 
 -- Create the TipoEncadernacao table
 CREATE TABLE TipoEncadernacao (

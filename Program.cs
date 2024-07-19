@@ -1,31 +1,63 @@
 using Microsoft.EntityFrameworkCore;
-using BookLibraryAPI.Data;
+using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Adicionar serviços ao contêiner.
-builder.Services.AddControllers();
-builder.Services.AddDbContext<BookLibraryContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Adicionar e configurar Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Configurar o pipeline de requisições HTTP.
-if (app.Environment.IsDevelopment())
+public class Program
 {
-    app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookLibraryAPI v1"));
+    public static void Main(string[] args)
+    {
+        CreateHostBuilder(args).Build().Run();
+    }
+
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.ConfigureServices((context, services) =>
+                {
+                    // Configuração do DbContext
+                    services.AddDbContext<BookLibraryContext>(options =>
+                        options.UseSqlServer(context.Configuration.GetConnectionString("DefaultConnection")));
+
+                    // Configuração dos serviços do MVC
+                    services.AddControllers();
+
+                    // Configuração do Swagger
+                    services.AddSwaggerGen(c =>
+                    {
+                        c.SwaggerDoc("v1", new OpenApiInfo
+                        {
+                            Version = "v1",
+                            Title = "Book Library API",
+                            Description = "An ASP.NET Core Web API for managing books",
+                        });
+                    });
+                })
+                .Configure(app =>
+                {
+                    var env = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
+
+                    if (env.IsDevelopment())
+                    {
+                        app.UseDeveloperExceptionPage();
+                        app.UseSwagger();
+                        app.UseSwaggerUI(c =>
+                        {
+                            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Book Library API V1");
+                        });
+                    }
+                    else
+                    {
+                        app.UseExceptionHandler("/Home/Error");
+                        app.UseHsts();
+                    }
+
+                    app.UseHttpsRedirection();
+                    app.UseRouting();
+                    app.UseAuthorization();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapControllers();
+                    });
+                });
+            });
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();

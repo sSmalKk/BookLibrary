@@ -1,95 +1,89 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using BookLibraryAPI.Data;
-using BookLibraryAPI.Model;
+﻿using BookLibraryAPI.Model;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace BookLibraryAPI.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class LivrosController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class LivrosController : ControllerBase
+    private readonly BookLibraryContext _context;
+
+    public LivrosController(BookLibraryContext context)
     {
-        private readonly BookLibraryContext _context;
+        _context = context;
+    }
 
-        public LivrosController(BookLibraryContext context)
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Livro>>> GetLivros([FromQuery] int? ano, [FromQuery] int? mes)
+    {
+        var query = _context.Livros.AsQueryable();
+
+        if (ano.HasValue)
         {
-            _context = context;
+            query = query.Where(l => l.Lancamento.Year == ano.Value);
+            if (mes.HasValue)
+            {
+                query = query.Where(l => l.Lancamento.Month == mes.Value);
+            }
         }
 
-        // Método GET existente para obter todos os livros
-        [HttpGet]
-        public ActionResult<IEnumerable<Livro>> Get()
+        return await query.ToListAsync();
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Livro>> GetLivro(int id)
+    {
+        var livro = await _context.Livros.FindAsync(id);
+        if (livro == null)
         {
-            return _context.Livros.ToList();
+            return NotFound();
         }
 
-        // Novo método GET para obter um livro por ID
-        [HttpGet("{id}")]
-        public ActionResult<Livro> GetById(int id)
+        return livro;
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<Livro>> PostLivro(Livro livro)
+    {
+        _context.Livros.Add(livro);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetLivro), new { id = livro.Codigo }, livro);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutLivro(int id, Livro livro)
+    {
+        if (id != livro.Codigo)
         {
-            var livro = _context.Livros.Find(id);
-            if (livro == null)
+            return BadRequest();
+        }
+
+        _context.Entry(livro).State = EntityState.Modified;
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!LivroExists(id))
             {
                 return NotFound();
             }
-            return livro;
+            else
+            {
+                throw;
+            }
         }
 
-        // Novo método POST para adicionar um novo livro
-        [HttpPost]
-        public ActionResult<Livro> Create(Livro livro)
-        {
-            _context.Livros.Add(livro);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = livro.Codigo }, livro);
-        }
+        return NoContent();
+    }
 
-        // Novo método PUT para atualizar um livro existente
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, Livro livro)
-        {
-            if (id != livro.Codigo)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(livro).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-            try
-            {
-                _context.SaveChanges();
-            }
-            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
-            {
-                if (!_context.Livros.Any(e => e.Codigo == id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // Novo método DELETE para excluir um livro
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            var livro = _context.Livros.Find(id);
-            if (livro == null)
-            {
-                return NotFound();
-            }
-
-            _context.Livros.Remove(livro);
-            _context.SaveChanges();
-
-            return NoContent();
-        }
-
-        // Outros métodos do controlador...
+    private bool LivroExists(int id)
+    {
+        return _context.Livros.Any(e => e.Codigo == id);
     }
 }

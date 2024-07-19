@@ -1,49 +1,123 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BookLibraryAPI.Model;
+﻿using BookLibraryAPI.Model;
+using Microsoft.EntityFrameworkCore;
 
-namespace BookLibraryAPI.Data
+public class BookLibraryContext : DbContext
 {
-    public class BookLibraryContext : DbContext
+    public BookLibraryContext(DbContextOptions<BookLibraryContext> options)
+        : base(options)
     {
-        public BookLibraryContext(DbContextOptions<BookLibraryContext> options) : base(options) { }
-
-        public DbSet<Livro> Livros { get; set; }
-        public DbSet<Tag> Tags { get; set; }
-        public DbSet<TipoEncadernacao> TipoEncadernacoes { get; set; }
-        public DbSet<LivroDigital> LivrosDigitais { get; set; }
-        public DbSet<LivroImpresso> LivrosImpressos { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Livro>()
-                .HasOne(l => l.LivroDigital)
-                .WithOne(ld => ld.Livro)
-                .HasForeignKey<LivroDigital>(ld => ld.Codigo);
-
-            modelBuilder.Entity<Livro>()
-                .HasOne(l => l.LivroImpresso)
-                .WithOne(li => li.Livro)
-                .HasForeignKey<LivroImpresso>(li => li.Codigo);
-
-            modelBuilder.Entity<Livro>()
-                .HasMany(l => l.LivroTags)
-                .WithOne(lt => lt.Livro)
-                .HasForeignKey(lt => lt.Livro.Codigo);
-
-            modelBuilder.Entity<Tag>()
-                .HasMany(t => t.Livros)
-                .WithOne(lt => lt.Tag)
-                .HasForeignKey(lt => lt.Tag.Codigo);
-
-            modelBuilder.Entity<LivroImpresso>()
-                .HasMany(li => li.TipoEncadernacoes)
-                .WithOne(lei => lei.LivroImpresso)
-                .HasForeignKey(lei => lei.LivroImpresso.Codigo);
-
-            modelBuilder.Entity<TipoEncadernacao>()
-                .HasMany(te => te.LivroImpressos)
-                .WithOne(lei => lei.TipoEncadernacao)
-                .HasForeignKey(lei => lei.TipoEncadernacao.Codigo);
-        }
     }
+
+    public DbSet<Livro> Livros { get; set; }
+    public DbSet<LivroDigital> LivrosDigitais { get; set; }
+    public DbSet<LivroImpresso> LivrosImpressos { get; set; }
+    public DbSet<TipoEncadernacao> TiposEncadernacao { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<LivroTagPossui> LivroTagPossuis { get; set; }
+    public DbSet<LivroImpressoTipoEncadernacaoPossui> LivroImpressoTipoEncadernacaoPossuis { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // Configuração de Livro e suas subclasses
+        modelBuilder.Entity<Livro>()
+            .HasKey(l => l.Codigo); // Definir chave primária para Livro
+        modelBuilder.Entity<Livro>()
+            .HasDiscriminator<string>("Tipo")
+            .HasValue<Livro>("Livro")
+            .HasValue<LivroDigital>("LivroDigital")
+            .HasValue<LivroImpresso>("LivroImpresso");
+
+        // Configuração de LivroImpresso e TipoEncadernacao (1:N)
+        modelBuilder.Entity<LivroImpresso>()
+            .HasOne(li => li.TipoEncadernacao)
+            .WithMany(te => te.LivrosImpressos)
+            .HasForeignKey(li => li.TipoEncadernacaoCodigo)
+            .IsRequired();
+
+        // Configuração de Livro e Tag (N:N)
+        modelBuilder.Entity<LivroTagPossui>()
+            .HasKey(lt => new { lt.LivroCodigo, lt.TagCodigo });
+
+        modelBuilder.Entity<LivroTagPossui>()
+            .HasOne(lt => lt.Livro)
+            .WithMany(l => l.LivroTagPossuis)
+            .HasForeignKey(lt => lt.LivroCodigo);
+
+        modelBuilder.Entity<LivroTagPossui>()
+            .HasOne(lt => lt.Tag)
+            .WithMany(t => t.LivroTagPossuis)
+            .HasForeignKey(lt => lt.TagCodigo);
+
+        // Configuração de LivroImpresso e TipoEncadernacaoPossui (N:N)
+        modelBuilder.Entity<LivroImpressoTipoEncadernacaoPossui>()
+            .HasKey(lie => new { lie.LivroImpressoId, lie.TipoEncadernacaoId });
+
+        modelBuilder.Entity<LivroImpressoTipoEncadernacaoPossui>()
+            .HasOne(lie => lie.LivroImpresso)
+            .WithMany(li => li.LivroImpressoTipoEncadernacaoPossuis)
+            .HasForeignKey(lie => lie.LivroImpressoId);
+
+        modelBuilder.Entity<LivroImpressoTipoEncadernacaoPossui>()
+            .HasOne(lie => lie.TipoEncadernacao)
+            .WithMany(te => te.LivroImpressoTipoEncadernacaoPossuis)
+            .HasForeignKey(lie => lie.TipoEncadernacaoId);
+
+        base.OnModelCreating(modelBuilder);
+    }
+}
+
+// Definição das entidades
+public class Livro
+{
+    public int Codigo { get; set; } // Chave primária
+    public string Titulo { get; set; }
+    public string Autor { get; set; }
+    public DateTime Lancamento { get; set; }
+    public ICollection<LivroTagPossui> LivroTagPossuis { get; set; }
+}
+
+public class LivroDigital : Livro
+{
+    public string Formato { get; set; }
+}
+
+public class LivroImpresso : Livro
+{
+    public double Peso { get; set; }
+    public int TipoEncadernacaoCodigo { get; set; }
+    public TipoEncadernacao TipoEncadernacao { get; set; }
+    public ICollection<LivroImpressoTipoEncadernacaoPossui> LivroImpressoTipoEncadernacaoPossuis { get; set; }
+}
+
+public class TipoEncadernacao
+{
+    public int Codigo { get; set; } // Chave primária
+    public string Nome { get; set; }
+    public string Descricao { get; set; }
+    public string Formato { get; set; }
+    public ICollection<LivroImpresso> LivrosImpressos { get; set; }
+    public ICollection<LivroImpressoTipoEncadernacaoPossui> LivroImpressoTipoEncadernacaoPossuis { get; set; }
+}
+
+public class Tag
+{
+    public int Codigo { get; set; } // Chave primária
+    public string Descricao { get; set; }
+    public ICollection<LivroTagPossui> LivroTagPossuis { get; set; }
+}
+
+public class LivroTagPossui
+{
+    public int LivroCodigo { get; set; }
+    public Livro Livro { get; set; }
+    public int TagCodigo { get; set; }
+    public Tag Tag { get; set; }
+}
+
+public class LivroImpressoTipoEncadernacaoPossui
+{
+    public int LivroImpressoId { get; set; }
+    public LivroImpresso LivroImpresso { get; set; }
+    public int TipoEncadernacaoId { get; set; }
+    public TipoEncadernacao TipoEncadernacao { get; set; }
 }
