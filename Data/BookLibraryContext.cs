@@ -22,11 +22,13 @@ public class BookLibraryContext : DbContext
         modelBuilder.Entity<Livro>()
             .HasKey(l => l.Codigo); // Chave primária
 
-        modelBuilder.Entity<Livro>()
-            .HasDiscriminator<string>("Tipo")
-            .HasValue<Livro>("Livro")
-            .HasValue<LivroDigital>("LivroDigital")
-            .HasValue<LivroImpresso>("LivroImpresso");
+        // Configuração de LivroDigital
+        modelBuilder.Entity<LivroDigital>()
+            .HasBaseType<Livro>();
+
+        // Configuração de LivroImpresso
+        modelBuilder.Entity<LivroImpresso>()
+            .HasBaseType<Livro>();
 
         // Configuração de LivroImpresso e TipoEncadernacao (1:N)
         modelBuilder.Entity<LivroImpresso>()

@@ -2,7 +2,7 @@ USE LivrariaDB;
 GO
 
 -- Criar a stored procedure para listar livros com filtros
-CREATE PROCEDURE spListarLivrosComFiltro
+CREATE PROCEDURE spLivros
     @Ano INT = NULL,
     @Mes INT = NULL
 AS

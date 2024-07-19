@@ -18,11 +18,11 @@ namespace BookLibraryAPI.Controllers
             _context = context;
         }
 
-        // GET: api/Livros/{id}
-        [HttpGet("{id}")]
-        public ActionResult<Livro> GetLivroById(int id)
+        // GET: api/Livros/{codigo}
+        [HttpGet("{codigo}")]
+        public ActionResult<Livro> GetLivroById(int codigo)
         {
-            var livro = _context.Livros.FirstOrDefault(l => l.Codigo == id); // Use 'Id' em vez de 'Codigo'
+            var livro = _context.Livros.FirstOrDefault(l => l.Codigo == codigo); // Use 'Id' em vez de 'Codigo'
 
             if (livro == null)
             {
@@ -39,14 +39,14 @@ namespace BookLibraryAPI.Controllers
             _context.Livros.Add(livro);
             _context.SaveChanges();
 
-            return CreatedAtAction(nameof(GetLivroById), new { id = livro.Codigo }, livro); // Use 'Id' em vez de 'Codigo'
+            return CreatedAtAction(nameof(GetLivroById), new { codigo = livro.Codigo }, livro); 
         }
 
-        // PUT: api/Livros/{id}
-        [HttpPut("{id}")]
-        public IActionResult PutLivro(int id, Livro livro)
+        // PUT: api/Livros/{codigo}
+        [HttpPut("{codigo}")]
+        public IActionResult PutLivro(int codigo, Livro livro)
         {
-            if (id != livro.Codigo) // Ajustado para usar `Id` conforme definido
+            if (codigo != livro.Codigo)
             {
                 return BadRequest();
             }
@@ -59,7 +59,7 @@ namespace BookLibraryAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_context.Livros.Any(e => e.Codigo == id))
+                if (!_context.Livros.Any(e => e.Codigo == codigo))
                 {
                     return NotFound();
                 }
@@ -72,11 +72,11 @@ namespace BookLibraryAPI.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Livros/{id}
-        [HttpDelete("{id}")]
-        public IActionResult DeleteLivro(int id)
+        // DELETE: api/Livros/{codigo}
+        [HttpDelete("{codigo}")]
+        public IActionResult DeleteLivro(int codigo)
         {
-            var livro = _context.Livros.FirstOrDefault(l => l.Codigo == id);
+            var livro = _context.Livros.FirstOrDefault(l => l.Codigo == codigo);
             if (livro == null)
             {
                 return NotFound();
@@ -93,7 +93,7 @@ namespace BookLibraryAPI.Controllers
         public async Task<IActionResult> GetLivros([FromQuery] int? ano = null, [FromQuery] int? mes = null)
         {
             var livros = await _context.Livros
-                .FromSqlRaw("EXEC spListarLivrosComFiltro @Ano, @Mes",
+                .FromSqlRaw("EXEC spLivros @Ano, @Mes",
                     new SqlParameter("@Ano", ano.HasValue ? (object)ano.Value : DBNull.Value),
                     new SqlParameter("@Mes", mes.HasValue ? (object)mes.Value : DBNull.Value))
                 .ToListAsync();
