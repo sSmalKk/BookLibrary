@@ -1,14 +1,12 @@
-USE LivrariaDb;
+USE LivrariaDB;
 GO
 
--- Verificar e excluir tabelas existentes (se necessário)
-IF OBJECT_ID('dbo.LivroImpresso_TipoEncadernacao_Possui', 'U') IS NOT NULL DROP TABLE dbo.LivroImpresso_TipoEncadernacao_Possui;
-IF OBJECT_ID('dbo.Livro_Tag_Possui', 'U') IS NOT NULL DROP TABLE dbo.Livro_Tag_Possui;
-IF OBJECT_ID('dbo.Tag', 'U') IS NOT NULL DROP TABLE dbo.Tag;
-IF OBJECT_ID('dbo.TipoEncadernacao', 'U') IS NOT NULL DROP TABLE dbo.TipoEncadernacao;
-IF OBJECT_ID('dbo.LivroImpresso', 'U') IS NOT NULL DROP TABLE dbo.LivroImpresso;
-IF OBJECT_ID('dbo.LivroDigital', 'U') IS NOT NULL DROP TABLE dbo.LivroDigital;
-IF OBJECT_ID('dbo.Livro', 'U') IS NOT NULL DROP TABLE dbo.Livro;
+-- Excluir a stored procedure existente, se ela existir
+IF OBJECT_ID('dbo.spListarLivrosComFiltro', 'P') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spListarLivrosComFiltro;
+END
+GO
 
 -- Criar a tabela Livro
 CREATE TABLE dbo.Livro (
@@ -63,3 +61,25 @@ CREATE TABLE dbo.LivroImpresso_TipoEncadernacao_Possui (
     FOREIGN KEY (LivroImpresso_Id) REFERENCES dbo.LivroImpresso(Id),
     FOREIGN KEY (TipoEncadernacao_Codigo) REFERENCES dbo.TipoEncadernacao(Codigo)
 );
+GO
+
+-- Criar a stored procedure para listar livros com filtros
+CREATE PROCEDURE dbo.spListarLivrosComFiltro
+    @Ano INT = NULL,
+    @Mes INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        l.Id,  -- Corrigido para Id
+        l.Titulo,
+        l.Autor,
+        l.Lancamento
+    FROM 
+        dbo.Livro l
+    WHERE
+        (@Ano IS NULL OR YEAR(l.Lancamento) = @Ano)
+        AND (@Mes IS NULL OR MONTH(l.Lancamento) = @Mes)
+END;
+GO

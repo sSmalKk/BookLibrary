@@ -1,4 +1,9 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
 public class Program
@@ -52,7 +57,9 @@ public class Program
                     }
 
                     app.UseHttpsRedirection();
+                    app.UseStaticFiles();
                     app.UseRouting();
+                    app.UseAuthentication(); 
                     app.UseAuthorization();
                     app.UseEndpoints(endpoints =>
                     {

@@ -1,5 +1,5 @@
-﻿using BookLibraryAPI.Model;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using BookLibraryAPI.Model;
 
 public class BookLibraryContext : DbContext
 {
@@ -20,7 +20,8 @@ public class BookLibraryContext : DbContext
     {
         // Configuração de Livro e suas subclasses
         modelBuilder.Entity<Livro>()
-            .HasKey(l => l.Codigo);
+            .HasKey(l => l.Codigo); // Chave primária
+
         modelBuilder.Entity<Livro>()
             .HasDiscriminator<string>("Tipo")
             .HasValue<Livro>("Livro")
@@ -36,7 +37,7 @@ public class BookLibraryContext : DbContext
 
         // Configuração de Livro e Tag (N:N)
         modelBuilder.Entity<LivroTagPossui>()
-            .HasKey(lt => new { lt.LivroCodigo, lt.TagCodigo });
+            .HasKey(lt => new { lt.LivroCodigo, lt.TagCodigo }); // Chave composta
 
         modelBuilder.Entity<LivroTagPossui>()
             .HasOne(lt => lt.Livro)
@@ -50,17 +51,17 @@ public class BookLibraryContext : DbContext
 
         // Configuração de LivroImpresso e TipoEncadernacaoPossui (N:N)
         modelBuilder.Entity<LivroImpressoTipoEncadernacaoPossui>()
-            .HasKey(lie => new { lie.LivroImpressoId, lie.TipoEncadernacaoId });
+            .HasKey(lie => new { lie.LivroImpressoCodigo, lie.TipoEncadernacaoCodigo }); // Chave composta
 
         modelBuilder.Entity<LivroImpressoTipoEncadernacaoPossui>()
             .HasOne(lie => lie.LivroImpresso)
             .WithMany(li => li.LivroImpressoTipoEncadernacaoPossuis)
-            .HasForeignKey(lie => lie.LivroImpressoId);
+            .HasForeignKey(lie => lie.LivroImpressoCodigo);
 
         modelBuilder.Entity<LivroImpressoTipoEncadernacaoPossui>()
             .HasOne(lie => lie.TipoEncadernacao)
             .WithMany(te => te.LivroImpressoTipoEncadernacaoPossuis)
-            .HasForeignKey(lie => lie.TipoEncadernacaoId);
+            .HasForeignKey(lie => lie.TipoEncadernacaoCodigo);
 
         // Configuração de Tag
         modelBuilder.Entity<Tag>()
@@ -72,60 +73,4 @@ public class BookLibraryContext : DbContext
 
         base.OnModelCreating(modelBuilder);
     }
-}
-
-// Definição das entidades
-public class Livro
-{
-    public int Codigo { get; set; }
-    public string Titulo { get; set; }
-    public string Autor { get; set; }
-    public DateTime Lancamento { get; set; }
-    public ICollection<LivroTagPossui> LivroTagPossuis { get; set; } = new HashSet<LivroTagPossui>();
-}
-
-public class LivroDigital : Livro
-{
-    public string Formato { get; set; }
-}
-
-public class LivroImpresso : Livro
-{
-    public double Peso { get; set; }
-    public int TipoEncadernacaoCodigo { get; set; }
-    public TipoEncadernacao TipoEncadernacao { get; set; }
-    public ICollection<LivroImpressoTipoEncadernacaoPossui> LivroImpressoTipoEncadernacaoPossuis { get; set; } = new HashSet<LivroImpressoTipoEncadernacaoPossui>();
-}
-
-public class TipoEncadernacao
-{
-    public int Codigo { get; set; }
-    public string Nome { get; set; }
-    public string Descricao { get; set; }
-    public string Formato { get; set; }
-    public ICollection<LivroImpresso> LivrosImpressos { get; set; } = new HashSet<LivroImpresso>();
-    public ICollection<LivroImpressoTipoEncadernacaoPossui> LivroImpressoTipoEncadernacaoPossuis { get; set; } = new HashSet<LivroImpressoTipoEncadernacaoPossui>();
-}
-
-public class Tag
-{
-    public int Codigo { get; set; }
-    public string Descricao { get; set; }
-    public ICollection<LivroTagPossui> LivroTagPossuis { get; set; } = new HashSet<LivroTagPossui>();
-}
-
-public class LivroTagPossui
-{
-    public int LivroCodigo { get; set; }
-    public Livro Livro { get; set; }
-    public int TagCodigo { get; set; }
-    public Tag Tag { get; set; }
-}
-
-public class LivroImpressoTipoEncadernacaoPossui
-{
-    public int LivroImpressoId { get; set; }
-    public LivroImpresso LivroImpresso { get; set; }
-    public int TipoEncadernacaoId { get; set; }
-    public TipoEncadernacao TipoEncadernacao { get; set; }
 }
